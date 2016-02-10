@@ -1,6 +1,7 @@
 package wattaina;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -9,65 +10,49 @@ public class UriageSyukei {
 	public static void main(String[] args) {
 //		try{
 			if(args.length != 1){
-				System.out.println("ファイル名を正しく指定してください。");
+				System.out.println("正しくディレクトリを指定してください。");
 				System.exit(1);
 			}
+			HashMap<String, String> map = new HashMap<String, String>();
 			try{
-				HashMap<String, String> map = new HashMap<String, String>();
-				map.put("branchfile", "branch.lst");
-				map.put("commodiltyfile", "commodilty.lst");
-				for(int i=0;i<map.size();i++){
-					BufferedReader br = new BufferedReader(new FileReader(args[i] + map.get(key)));
+				BufferedReader br = new BufferedReader(new FileReader(args[0]+"\\branch.lst"));
 
-					int a =0;
-					String[] strarray = new String[6];
-					String[] stnCode = new String[6];
-					String str;
-					while((str = br.readLine()) != null){
-						strarray[a] = str;
-						stnCode[a] = strarray[a].substring(0,3);
-						a=a+1;
-					}
-					br.close();
+
+				String str;
+				while((str = br.readLine()) != null){
+					map.put(str.substring(0,3), str.substring(4));
 				}
+				br.close();
 			}catch(IOException e){
 				System.out.println("支店定義ファイルが存在しません");
 			}
-//
-//			HashMap<String, String> map = new HashMap<String, String>();
-//			for(int i=0;i<100;i++){
-//				if(i<10){
-//					map.put("rcdfile"+i, "0000000"+i+".rcd");
-//				}
-//				else if((i<100)){
-//					map.put("rcdfile"+i, "000000"+i+".rcd");
-//				}
-//			}
-//			String[] strarray = new String[map.size()];
-//			String[] urg = new String[map.size()];
-//			for(int i=0;i<map.size();i++){
-//				int n=0;
-//				File file = new File(map.get("cdrfile"+i));
-//				if (!file.exists()){
-////					newdir
-//				}
-//				FileReader fr = new FileReader(file);
-//				BufferedReader br = new BufferedReader(fr);
-//				String s;
-//				while((s = br.readLine()) != null){
-//					strarray[n]=s;
-//					urg[n] = strarray[n].substring(0);
-//					n=n+1;
-//				}
-//				System.out.println(urg[i]);
-//				br.close();
-//			}
-//			int[] val = new int[3];
-//			for(int i=0;i<3;i++){
-//				val[i] = Integer.parseInt(urg[2]);
-//			}
-//			System.out.println(val[2]);
-//			//.crdファイルから送られた売上額をStringからintに変更
+			//商品定義ファイルを
+			try{
+				BufferedReader br = new BufferedReader(new FileReader(args[0]+"\\commodilty.lst"));
+
+
+				String str;
+				while((str = br.readLine()) != null){
+					map.put(str.substring(0,8), str.substring(9));
+				}
+				br.close();
+			}catch(IOException e){
+				System.out.println("支店定義ファイルが存在しません");
+			}
+
+			File dir = new File(args[0]);
+		    File[] files = dir.listFiles();
+		    for (int i = 0; i < files.length; i++) {
+		        File file = files[i];
+
+				if(file.getName().matches("^\\d{8}.rcd$")) {
+					String[] rcdfile = file.getName().split("\\.", -1);
+					
+					System.out.println(rcdfile[0]);
+				}
+
+		    }
+
 //			File file4 = new File("C:\\java\\branch.out");
 //			FileWriter fw1 = new FileWriter(file4);
 //			for(int i=0;i<6;i++){
@@ -81,11 +66,7 @@ public class UriageSyukei {
 //				}
 //			}
 //			fw1.close();
-//			System.out.println(stn_code[0]);
-//		} catch(IOException e){
-//			System.out.println(e);
-//			System.out.println("支店定義ファイルが存在しません");
-//		}
 	}
+
 
 }
