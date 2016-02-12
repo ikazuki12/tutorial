@@ -3,69 +3,97 @@ package wattaina;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public class UriageSyukei {
 	public static void main(String[] args) {
-//		try{
 			if(args.length != 1){
 				System.out.println("正しくディレクトリを指定してください。");
 				System.exit(1);
 			}
-			HashMap<String, String> map = new HashMap<String, String>();
+			LinkedHashMap<String, String> branchMap = new LinkedHashMap<String, String>();
+			//商品定義ファイルを読み込む
 			try{
 				BufferedReader br = new BufferedReader(new FileReader(args[0]+"\\branch.lst"));
 
-
 				String str;
+				int i =0;
 				while((str = br.readLine()) != null){
-					map.put(str.substring(0,3), str.substring(4));
+					branchMap.put("code"+i, str.substring(0,3));
+					branchMap.put("name"+i, str.substring(4));
+					i=i+1;
 				}
+//				System.out.println(branchMap.size());
 				br.close();
 			}catch(IOException e){
 				System.out.println("支店定義ファイルが存在しません");
 			}
-			//商品定義ファイルを
+			//商品定義ファイルを読み込む
+			LinkedHashMap<String, String> commiditltyMap = new LinkedHashMap<String, String>();
 			try{
 				BufferedReader br = new BufferedReader(new FileReader(args[0]+"\\commodilty.lst"));
 
 
 				String str;
+				int i=0;
 				while((str = br.readLine()) != null){
-					map.put(str.substring(0,8), str.substring(9));
+					commiditltyMap.put("code"+i, str.substring(0,3));
+					commiditltyMap.put("name"+i, str.substring(4));
+					i=i+1;
 				}
 				br.close();
 			}catch(IOException e){
-				System.out.println("支店定義ファイルが存在しません");
+				System.out.println("商品定義ファイルが存在しません");
 			}
 
-			File dir = new File(args[0]);
-		    File[] files = dir.listFiles();
-		    for (int i = 0; i < files.length; i++) {
-		        File file = files[i];
+			ArrayList<String> rcdin = new ArrayList<String>();
+			try{
+				File dir = new File(args[0]);
+			    File[] files = dir.listFiles();
+			    ArrayList<String> rcdfile = new ArrayList<String>();
+			    for (int i = 0; i < files.length; i++) {
+			        File file = files[i];
 
-				if(file.getName().matches("^\\d{8}.rcd$")) {
-					String[] rcdfile = file.getName().split("\\.", -1);
-					
-					System.out.println(rcdfile[0]);
+					if(file.getName().matches("^\\d{8}.rcd$")) {
+						rcdfile.add(file.getName());
+					}
+
+			    }
+
+				for (int i = 0; i < rcdfile.size(); i++){
+					 BufferedReader br = new BufferedReader(new FileReader(args[0] +"\\" +rcdfile.get(i)));
+					 String str;
+					 while((str = br.readLine()) != null){
+					 	rcdin.add(str);
+					 }
+					 br.close();
 				}
+			}catch(IOException e){
+				System.out.println("売上ファイルが存在しません");
+			}
+			try {
+				File file = new File(args[0]+"\\branch.out");
+				FileWriter fw = new FileWriter(file);
+				int a=0;
+				int b= 2;
+//				System.out.println(branchMap.size()/2);
+				for(int i=0;i<(branchMap.size()/2);i++){
+//					System.out.println(i);
+					if(branchMap.get("code"+i).equals(rcdin.get(a*3))){
+						System.out.println(branchMap.get("code"+i)+","+branchMap.get("name"+i)+","+rcdin.get(a*3+2));
+						a = a+1;
+					}else if(!(branchMap.get("code"+i).equals(rcdin.get(a*3)))){
+						System.out.println(branchMap.get("code"+i)+","+branchMap.get("name"+i)+"," +0);
+					}
+				}
+				fw.close();
+			} catch (IOException e) {
+				System.out.println("支店別集計ファイルが存在しません");
+			}
 
-		    }
-
-//			File file4 = new File("C:\\java\\branch.out");
-//			FileWriter fw1 = new FileWriter(file4);
-//			for(int i=0;i<6;i++){
-//				int stn_total = 0;
-//				if(!(stn_code[i].equals(urg[0]))){
-//					fw1.write(stn_code[i]+","+stn_name[i]+","+stn_total+"\n");
-//				}else if(stn_code[i].equals(urg[0])){
-//					fw1.write(stn_code[i]+","+stn_name[i]+","+(stn_total+val[i])+"\n");
-//				}else{
-//					break;
-//				}
-//			}
-//			fw1.close();
 	}
 
 
