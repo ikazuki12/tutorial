@@ -20,13 +20,9 @@ public class UriageSyukei {
 				BufferedReader br = new BufferedReader(new FileReader(args[0]+"\\branch.lst"));
 
 				String str;
-				int i =0;
 				while((str = br.readLine()) != null){
-					branchMap.put("code"+i, str.substring(0,3));
-					branchMap.put("name"+i, str.substring(4));
-					i=i+1;
+					branchMap.put(str.substring(0,3), str.substring(4));
 				}
-//				System.out.println(branchMap.size());
 				br.close();
 			}catch(IOException e){
 				System.out.println("支店定義ファイルが存在しません");
@@ -38,11 +34,8 @@ public class UriageSyukei {
 
 
 				String str;
-				int i=0;
 				while((str = br.readLine()) != null){
-					commodityMap.put("code"+i, str.substring(0,8));
-					commodityMap.put("name"+i, str.substring(9));
-					i=i+1;
+					commodityMap.put(str.substring(0,8), str.substring(9));
 				}
 				br.close();
 			}catch(IOException e){
@@ -74,34 +67,18 @@ public class UriageSyukei {
 			}catch(IOException e){
 				System.out.println("売上ファイルが存在しません");
 			}
+//			try{
+				for(int i=0;i<(branchMap.size()/2);i++){
+					if(!(branchMap.get(rcdin.get(i*3))==null)){
+						int rcdearnigs = Integer.parseInt(rcdin.get(i*3+2));
+					}
+				}
+//			}
+			System.out.println(rcdin.get(0*3+1));
 			try {
 				File file = new File(args[0]+"\\branch.out");
 				FileWriter fw = new FileWriter(file);
-				int a=0;
-				for(int i=0;i<(branchMap.size()/2);i++){
-					if(branchMap.get("code"+i).equals(rcdin.get(a*3))){
-						System.out.println(branchMap.get("code"+i)+","+branchMap.get("name"+i)+","+rcdin.get(a*3+2));
-						a = a+1;
-					}else if(!(branchMap.get("code"+i).equals(rcdin.get(a*3)))){
-						System.out.println(branchMap.get("code"+i)+","+branchMap.get("name"+i)+"," +0);
-					}
-				}
-				fw.close();
-			} catch (IOException e) {
-				System.out.println("支店別集計ファイルが存在しません");
-			}
-			try {
-				File file = new File(args[0]+"\\branch.out");
-				FileWriter fw = new FileWriter(file);
-				int a=0;
-				for(int i=0;i<(branchMap.size()/2);i++){
-					if(branchMap.get("code"+i).equals(rcdin.get(a*3))){
-						fw.write(branchMap.get("code"+i)+","+branchMap.get("name"+i)+","+rcdin.get(a*3+2)+"\n");
-						a = a+1;
-					}else if(!(branchMap.get("code"+i).equals(rcdin.get(a*3)))){
-						fw.write(branchMap.get("code"+i)+","+branchMap.get("name"+i)+"," +0+"\n");
-					}
-				}
+
 				fw.close();
 			} catch (IOException e) {
 				System.out.println("支店別集計ファイルが存在しません");
@@ -109,16 +86,7 @@ public class UriageSyukei {
 			try {
 				File file = new File(args[0]+"\\commodity.out");
 				FileWriter fw = new FileWriter(file);
-				int a=0;
-				
-				for(int i=0;i<(commodityMap.size()/2);i++){
-					if(rcdin.get(a*3+1).equals(commodityMap.get("code"+i))){
-						fw.write(commodityMap.get("code"+i)+","+commodityMap.get("name"+i)+","+rcdin.get(a*3+2)+"\n");
-						a = a+1;
-					}else if(!(rcdin.get(a*3+1).equals(commodityMap.get("code"+i)))){
-						fw.write(commodityMap.get("code"+i)+","+commodityMap.get("name"+i)+"," +0+"\n");
-					}
-				}
+
 				fw.close();
 			} catch (IOException e) {
 				System.out.println("商品別集計ファイルが存在しません");
