@@ -24,12 +24,16 @@ public class UriageSyukei {
 			BufferedReader br = new BufferedReader(new FileReader(args[0]+"\\branch.lst"));
 			String str;
 			while((str = br.readLine()) != null){
+				if(!(str.matches("^\\d{3},\\D{1,}支店$"))){
+					System.out.println("支店定義ファイルのフォーマットが不正です");
+					return;
+				}
 				String[] branch = str.split(",");
 				if(!(branch[0].matches("^\\d{3}"))){
 					System.out.println("支店定義ファイルのフォーマットが不正です");
 					return;
 				}
-				if(!(branch[1].matches("^\\D{2,3}支店"))){
+				if(!(branch[1].matches("^\\D{1,}支店"))){
 					System.out.println("支店定義ファイルのフォーマットが不正です");
 					return;
 				}
@@ -48,12 +52,20 @@ public class UriageSyukei {
 			BufferedReader br = new BufferedReader(new FileReader(args[0]+"\\commodity.lst"));
 			String str;
 			while((str = br.readLine()) != null){
+				if(!(str.matches("^\\D{3}\\d{5},\\D{1,}[^,]$"))){
+					System.out.println("商品定義ファイルのフォーマットが不正です");
+					return;
+				}
+				if(!(str.matches("^\\D{3}\\d{5},\\D{1,}[^,]\\D"))){
+					System.out.println("商品定義ファイルのフォーマットが不正です");
+					return;
+				}
 				String[] commodity = str.split(",");
 				if(!(commodity[0].matches("^\\D{3}\\d{5}"))){
 					System.out.println("商品定義ファイルのフォーマットが不正です");
 					return;
 				}
-				if((commodity[1].matches(",\\n"))){
+				if(!(commodity[1].matches("^\\D{1,}"))){
 					System.out.println("商品定義ファイルのフォーマットが不正です");
 					return;
 				}
@@ -89,7 +101,12 @@ public class UriageSyukei {
 			    	return;
 			    }
 		    }
+		    
 		    for(int i = 0; i < rcdfile.size(); i++){
+		    	if(rcdfile.get(i).length() != 12){
+		    		System.out.println("支店定義ファイルが存在しません");
+		    		return;
+		    	}
 				BufferedReader br = new BufferedReader(new FileReader(args[0] +"\\" +rcdfile.get(i)));
 				String str;
 				int a = 0;
@@ -108,7 +125,6 @@ public class UriageSyukei {
 									}else{
 										bigprice[i] = Long.parseLong(str);
 									}
-//									rcdMap.put(rcdin.get(i*2),price[i]);
 									if(rcdMap.get(rcdin.get(i*2)) == null){
 										rcdMap.put(rcdin.get(i*2),price[i]);
 									}else{
@@ -151,8 +167,8 @@ public class UriageSyukei {
 		try {
 			File file = new File(args[0]+"\\branch.out");
 			FileWriter fw = new FileWriter(file);
-			ArrayList branchList = new ArrayList();
-			HashMap branch = new HashMap();
+			ArrayList<Integer> branchList = new ArrayList<Integer>();
+			HashMap<Integer,String> branch = new HashMap<Integer,String>();
 			int a = 0;
 			for(int i = 0; i < (branchMap.size()); i++){
 				if(rcdMap.get(branchCode.get(i))!=null){
@@ -183,8 +199,8 @@ public class UriageSyukei {
 		try {
 			File file = new File(args[0]+"\\commodity.out");
 			FileWriter fw = new FileWriter(file);
-			ArrayList commodityList = new ArrayList();
-			HashMap commodity = new HashMap();
+			ArrayList<Integer> commodityList = new ArrayList<Integer>();
+			HashMap<Integer,String> commodity = new HashMap<Integer,String>();
 			int a = 0;
 			for(int i = 0; i < (commodityMap.size()); i++){
 				if(rcdMap.get(commodityCode.get(i))!=null){
