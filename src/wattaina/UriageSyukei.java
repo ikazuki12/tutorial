@@ -39,6 +39,7 @@ public class UriageSyukei {
 			br.close();
 		}catch(IOException e){
 			System.out.println("支店定義ファイルが存在しません");
+			return;
 		}
 //		商品定義ファイルを読み込む		//
 		LinkedHashMap<String, String> commodityMap = new LinkedHashMap<String, String>();
@@ -62,6 +63,7 @@ public class UriageSyukei {
 			br.close();
 		}catch(IOException e){
 			System.out.println("商品定義ファイルが存在しません");
+			return;
 		}
 
 		ArrayList<String> rcdin = new ArrayList<String>();
@@ -144,6 +146,7 @@ public class UriageSyukei {
 			}
 		}catch(IOException e){
 			System.out.println("売上ファイルが存在しません");
+			return;
 		}
 		try {
 			File file = new File(args[0]+"\\branch.out");
@@ -166,9 +169,9 @@ public class UriageSyukei {
 			a=0;
 			for(int i = 0; i < (branchMap.size()); i++){
 				if(!(branchList.get(i).equals(0))){
-					System.out.print(branch.get(branchList.get(i)) + "," + branchList.get(i) + "\n");
+					fw.write(branch.get(branchList.get(i)) + "," + branchList.get(i) + "\n");
 				}else{
-					System.out.print(branch.get(a) + "," + branchList.get(i) + "\n");
+					fw.write(branch.get(a) + "," + branchList.get(i) + "\n");
 					a++;
 				}
 			}
@@ -198,15 +201,16 @@ public class UriageSyukei {
 			a=0;
 			for(int i = 0; i < (commodityMap.size()); i++){
 				if(!(commodityList.get(i).equals(0))){
-					System.out.print(commodity.get(commodityList.get(i)) + "," + commodityList.get(i) + "\n");
+					fw.write(commodity.get(commodityList.get(i)) + "," + commodityList.get(i) + "\n");
 				}else{
-					System.out.print(commodity.get(a) + "," + commodityList.get(i) + "\n");
+					fw.write(commodity.get(a) + "," + commodityList.get(i) + "\n");
 					a++;
 				}
 			}
 			fw.close();
 		} catch (IOException e) {
 			System.out.println("商品別集計ファイルが存在しません");
+			return;
 		}
 	}
 }
