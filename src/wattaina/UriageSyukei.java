@@ -16,26 +16,22 @@ import java.util.TreeMap;
 
 public class UriageSyukei {
 
-	static boolean inputfile(String[] args, ArrayList<String> listfile, String[] fileNameJp,
-			String regex, LinkedHashMap<String, String> Map ){
+	static boolean inputfile(String[] args, ArrayList<String> listfile, String regex, LinkedHashMap<String, String> Map, int filenum){
 		for(int i = 0; i < listfile.size(); i++){
 			try{
-				BufferedReader br = new BufferedReader(new FileReader(args[0]
-															+ "\\" + listfile.get(i)));
+				BufferedReader br = new BufferedReader(new FileReader(args[0] + File.separator + listfile.get(i)));
 				String str;
 				while((str = br.readLine()) != null){
 					if(!(str.matches(regex))){
-						System.err.println(fileNameJp[i] + "定義ファイルのフォーマットが不正です");
-						System.exit(0);
+						
 					}
 					String[] format = str.split(",");
-
 					Map.put(format[0],format[1]);
 				}
 				br.close();
 			}catch(IOException e){
-				System.err.println(fileNameJp[i] + "定義ファイルが存在しません");
-				System.exit(0);
+				filenum = filenum + i;
+				notfile(null, filenum);
 			}
 		}
 		return false;
@@ -62,11 +58,12 @@ public class UriageSyukei {
 	    }
 	}
 
-	static void tally(String[] args, LinkedHashMap<String, String> Map,LinkedHashMap<String, Integer> rcdMap, ArrayList<String> rcdfile){
+	static void tally(String[] args, LinkedHashMap<String, String> Map,
+			LinkedHashMap<String, Integer> rcdMap, ArrayList<String> rcdfile, int filenum){
 		try{
 		    ArrayList<String> rcdread = new ArrayList<String>();
 		    for(int i = 0; i < rcdfile.size(); i++){
-				BufferedReader br = new BufferedReader(new FileReader(args[0] +"\\" +rcdfile.get(i)));
+				BufferedReader br = new BufferedReader(new FileReader(args[0] + File.separator + rcdfile.get(i)));
 				String str;
 				while((str = br.readLine()) != null){
 					rcdread.add(str);
@@ -101,8 +98,8 @@ public class UriageSyukei {
 				br.close();
 			}
 		}catch(IOException e){
-			System.err.println("売上ファイルが存在しません");
-			System.exit(0);
+			filenum = filenum + 1;
+			notfile(null, filenum);
 		}
 		for(String key : rcdMap.keySet()){
 			if(rcdMap.get(key) >= 1000000000){
@@ -112,11 +109,11 @@ public class UriageSyukei {
 		}
 	}
 
-	static void outputfile(String[] args, ArrayList<String> outfile, String[] fileNameJp,
-			String[] match,LinkedHashMap<String,String> Map,LinkedHashMap<String,Integer> rcdMap){
+	static void outputfile(String[] args, ArrayList<String> outfile, String[] match,
+			LinkedHashMap<String, String> Map, LinkedHashMap<String, Integer> rcdMap, int filenum){
 		for(int i = 0; i < outfile.size(); i++){
 			try{
-				File file = new File(args[0] + "\\" + outfile.get(i));
+				File file = new File(args[0] + File.separator + outfile.get(i));
 				FileWriter fw = new FileWriter(file);
 				Map<Integer, String> Out = new TreeMap<Integer, String>();
 				int a = 0;
@@ -132,7 +129,6 @@ public class UriageSyukei {
 					}
 				}
 				List<Entry<Integer, String>> entries = new ArrayList<Entry<Integer, String>>(Out.entrySet());
-
 				Collections.sort(entries, new Comparator<Entry<Integer, String>>() {
 				    public int compare(Entry<Integer, String> o1, Entry<Integer, String> o2) {
 				        return o2.getKey().compareTo(o1.getKey());
@@ -140,18 +136,26 @@ public class UriageSyukei {
 				});
 				for(Entry<Integer,String> entry : entries){
 					if(!(entry.getKey().equals(a))){
-						fw.write(Out.get(entry.getKey()) + "," + entry.getKey() + "\n");
+						fw.write(Out.get(entry.getKey()) + "," + entry.getKey() + System.getProperty("line.separator"));
 					}else{
-						fw.write(Out.get(entry.getKey()) + "," + 0 + "\n");
+						fw.write(Out.get(entry.getKey()) + "," + 0 + System.getProperty("line.separator"));
 						a--;
 					}
 				}
 				fw.close();
 			} catch (IOException e) {
-				System.err.println(fileNameJp[i] + "別集計ファイルが存在しません");
-				System.exit(0);
+				filenum = filenum + 2 + i;
+				notfile(null, filenum);
 			}
 		}
+	}
+	public static void notfile(String[] filename, int filenum){
+		main(filename);
+		System.err.println(filename[filenum] + "ファイルが存在しません");
+		System.exit(0);
+	}
+	public static void formaterror(){
+		
 	}
 
 	public static void main(String[] args) {
@@ -172,19 +176,22 @@ public class UriageSyukei {
 				outfile.add(file.getName());
 			}
 		}
-		String[] fileNameJp = new String[5];
-		fileNameJp[0] = "支店";
-		fileNameJp[1] = "商品";
-		fileNameJp[2] = "売上";
+		String[] filename = new String[5];
+		filename[0] = "支店定義";
+		filename[1] = "商品定義";
+		filename[2] = "売上";
+		filename[3] = "支店別集計";
+		filename[4] = "商品別集計";
+		int filenum = 0;
 		String regex = "^\\d{3},[^,]\\D{1,}[^,]$|^\\w{8},[^,]\\D{1,}[^,]$";
 		LinkedHashMap<String, String> Map = new LinkedHashMap<String, String>();
 		LinkedHashMap<String, Integer> rcdMap = new LinkedHashMap<String, Integer>();
 		String[] match = new String[listfile.size()];
 		match[0] = "^\\d{3}";
 		match[1] = "^\\D{3}\\d{5}";
-		inputfile(args, listfile, fileNameJp, regex, Map);
+		inputfile(args, listfile, regex, Map, filenum);
 		numberCheck(args, rcdfile);
-		tally(args, Map, rcdMap, rcdfile);
-		outputfile(args, outfile, fileNameJp, match, Map, rcdMap);
+		tally(args, Map, rcdMap, rcdfile ,filenum);
+		outputfile(args, outfile, match, Map, rcdMap ,filenum);
 	}
 }
