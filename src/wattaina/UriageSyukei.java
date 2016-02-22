@@ -1,6 +1,7 @@
 package wattaina;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,22 +17,23 @@ import java.util.TreeMap;
 
 public class UriageSyukei {
 
-	static String inputfile(String[] args, String files, String regex, LinkedHashMap<String, String> map){
+	static String loadFile(String[] args, String files, String regex, LinkedHashMap<String, String> map){
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(args[0] + File.separator + files));
 			String str;
 			while((str = br.readLine()) != null){
-				if(str.matches(".*[^,],{1}[^,].*")){
-					String[] format = str.split(",");
-					map.put(format[0],format[1]);
-					if(!(format[0].matches(regex))){
+				String[] format = str.split(",");
+				if(format.length != 2){
 						return "format";
-					}
-				}else{
-					return "format";
 				}
+				if(!(format[0].matches(regex))){
+					return "format";
+				}	
+				map.put(format[0],format[1]);
 			}
 			br.close();
+		}catch(FileNotFoundException e){
+			return "not";
 		}catch(IOException e){
 			return "not";
 		}
@@ -60,8 +62,7 @@ public class UriageSyukei {
 		}
 	}
 
-
-	static void tally(String[] args, LinkedHashMap<String, String> map, String name,
+	static void aggregateData(String[] args, LinkedHashMap<String, String> map, String name,
 			LinkedHashMap<String, Integer> rcdMap, ArrayList<String> rcdfile){
 		try{
 			ArrayList<String> rcdread = new ArrayList<String>();
@@ -111,14 +112,14 @@ public class UriageSyukei {
 			System.exit(0);
 		}
 		for(String key : rcdMap.keySet()){
-			if(rcdMap.get(key) >= 1000000000){
+			if(rcdMap.get(key).toString().length() >= 10){
 				System.err.println("合計金額が10桁を超えています");
 				System.exit(0);
 			}
 		}
 	}
 
-	static boolean outputfile(String[] args, String files,
+	static boolean fileOutput(String[] args, String files,
 			LinkedHashMap<String, String> map, LinkedHashMap<String, Integer> rcdMap){
 			try{
 				File file = new File(args[0] + File.separator + files);
@@ -149,8 +150,11 @@ public class UriageSyukei {
 					}
 				}
 				fw.close();
-			} catch (IOException e) {
-				return false;
+			}catch(FileNotFoundException e) {
+				return true;
+			}
+			catch (IOException e) {
+				return true;
 			}
 			return false;
 	}
@@ -176,40 +180,40 @@ public class UriageSyukei {
 		LinkedHashMap<String, String> commodityMap = new LinkedHashMap<String, String>();
 		LinkedHashMap<String, Integer> rcdMap = new LinkedHashMap<String, Integer>();
 
-		if(inputfile(args, "branch.lst", regex, branchMap) == null){
-			inputfile(args, "branch.lst", regex, branchMap);
-		}else if(inputfile(args, "branch.lst", regex, commodityMap).equals("not")){
+		if(loadFile(args, "branch.lst", regex, branchMap) == null){
+			loadFile(args, "branch.lst", regex, branchMap);
+		}else if(loadFile(args, "branch.lst", regex, commodityMap).equals("not")){
 			notfile("支店定義");
 			return;
-		}else if(inputfile(args, "branch.lst", regex, commodityMap).equals("format")){
+		}else if(loadFile(args, "branch.lst", regex, commodityMap).equals("format")){
 			formaterror("支店定義");
 			return;
 		}
 
-		if(inputfile(args, "commodity.lst", regex, commodityMap) == null){
-			inputfile(args, "commodity.lst", regex, commodityMap);
-		}else if(inputfile(args, "commodity.lst", regex, commodityMap).equals("not")){
+		if(loadFile(args, "commodity.lst", regex, commodityMap) == null){
+			loadFile(args, "commodity.lst", regex, commodityMap);
+		}else if(loadFile(args, "commodity.lst", regex, commodityMap).equals("not")){
 			notfile("商品定義");
 			return;
-		}else if(inputfile(args, "commodity.lst", regex, commodityMap).equals("format")){
+		}else if(loadFile(args, "commodity.lst", regex, commodityMap).equals("format")){
 			formaterror("商品定義");
 			return;
 		}
 
 		numberCheck(args, rcdfile);
 
-		tally(args, branchMap, "branch", rcdMap, rcdfile);
-		tally(args, commodityMap, "commodity", rcdMap, rcdfile);
+		aggregateData(args, branchMap, "branch", rcdMap, rcdfile);
+		aggregateData(args, commodityMap, "commodity", rcdMap, rcdfile);
 
-		if(outputfile(args, "branch.out",  branchMap, rcdMap) == false){
-			outputfile(args, "branch.out",  branchMap, rcdMap);
+		if(fileOutput(args, "branch.out",  branchMap, rcdMap) == false){
+			fileOutput(args, "branch.out",  branchMap, rcdMap);
 		}else{
 			notfile("支店別集計");
 			return;
 		}
 
-		if(outputfile(args, "commodity.out",  branchMap, rcdMap) == false){
-			outputfile(args, "commodity.out", commodityMap, rcdMap);
+		if(fileOutput(args, "commodity.out",  branchMap, rcdMap) == false){
+			fileOutput(args, "commodity.out", commodityMap, rcdMap);
 		}else{
 			notfile("商品別集計");
 			return;
