@@ -16,26 +16,28 @@ import java.util.TreeMap;
 
 public class UriageSyukei {
 
-	static boolean inputfile(String[] args, ArrayList<String> listfile, String regex, LinkedHashMap<String, String> Map, int filenum){
-		for(int i = 0; i < listfile.size(); i++){
-			try{
-				BufferedReader br = new BufferedReader(new FileReader(args[0] + File.separator + listfile.get(i)));
-				String str;
-				while((str = br.readLine()) != null){
-					if(!(str.matches(regex))){
-						
-					}
+	static String inputfile(String[] args, String files, String regex, LinkedHashMap<String, String> map){
+		try{
+			BufferedReader br = new BufferedReader(new FileReader(args[0] + File.separator + files));
+			String str;
+			while((str = br.readLine()) != null){
+				if(str.matches(".*[^,],{1}[^,].*")){
 					String[] format = str.split(",");
-					Map.put(format[0],format[1]);
+					map.put(format[0],format[1]);
+					if(!(format[0].matches(regex))){
+						return "format";
+					}
+				}else{
+					return "format";
 				}
-				br.close();
-			}catch(IOException e){
-				filenum = filenum + i;
-				notfile(null, filenum);
 			}
+			br.close();
+		}catch(IOException e){
+			return "not";
 		}
-		return false;
+		return null;
 	}
+
 	static void numberCheck(String[] args, ArrayList<String> rcdfile){
 		File dir = new File(args[0]);
 		File[] files = dir.listFiles();
@@ -46,60 +48,67 @@ public class UriageSyukei {
 			}
 		}
 		String[] rcd = new String[rcdfile.size()];
-	    int[] rcd2 = new int[rcdfile.size()];
-	    for(int i=0; i < rcdfile.size(); i++){
-	    	rcd = rcdfile.get(i).split("\\.");
-	    	Arrays.sort(rcd);
-		    rcd2[i] = Integer.parseInt(rcd[0]);
-		    if(i + 1 != rcd2[i]){
-		    	System.err.println("売上ファイル名が連番になっていません");
-		    	System.exit(0);
-		    }
-	    }
+		int[] rcd2 = new int[rcdfile.size()];
+		for(int i=0; i < rcdfile.size(); i++){
+			rcd = rcdfile.get(i).split("\\.");
+			Arrays.sort(rcd);
+			rcd2[i] = Integer.parseInt(rcd[0]);
+			if(i + 1 != rcd2[i]){
+				System.err.println("売上ファイル名が連番になっていません");
+				return;
+			}
+		}
 	}
 
-	static void tally(String[] args, LinkedHashMap<String, String> Map,
-			LinkedHashMap<String, Integer> rcdMap, ArrayList<String> rcdfile, int filenum){
+
+	static void tally(String[] args, LinkedHashMap<String, String> map, String name,
+			LinkedHashMap<String, Integer> rcdMap, ArrayList<String> rcdfile){
 		try{
-		    ArrayList<String> rcdread = new ArrayList<String>();
+			ArrayList<String> rcdread = new ArrayList<String>();
 		    for(int i = 0; i < rcdfile.size(); i++){
 				BufferedReader br = new BufferedReader(new FileReader(args[0] + File.separator + rcdfile.get(i)));
 				String str;
 				while((str = br.readLine()) != null){
 					rcdread.add(str);
 				}
+				if(rcdread.size() % 3 != 0){
+					formaterror(rcdfile.get(i));
+				}
 				int[] price = new int[rcdfile.size()];
-				price[i] = Integer.parseInt(rcdread.get(i * 3 + 2));
-				if(price[i] <= 1000000000){
+				if(rcdread.get(i * 3 + 2).length() <= 10){
 					price[i] = Integer.parseInt(rcdread.get(i * 3 + 2));
 				}else{
 					System.err.println("売上金額が10桁を超えました");
 				}
-				if(Map.get(rcdread.get(i * 3)) != null){
-					if(rcdMap.get(rcdread.get(i * 3)) == null){
-						rcdMap.put(rcdread.get(i * 3) , price[i]);
+				if(name.equals("branch")){
+					if(map.get(rcdread.get(i * 3)) != null){
+						if(rcdMap.get(rcdread.get(i * 3)) == null){
+							rcdMap.put(rcdread.get(i * 3) , price[i]);
+						}else{
+							rcdMap.put(rcdread.get(i * 3) , rcdMap.get(rcdread.get(i * 3)) + price[i]);
+						}
 					}else{
-						rcdMap.put(rcdread.get(i * 3) , rcdMap.get(rcdread.get(i * 3)) + price[i]);
+						codeerror(rcdfile.get(i), "支店");
+						System.exit(0);
 					}
-				}else{
-					System.err.println(rcdfile.get(i) + "の支店コードが不正です");
-					System.exit(0);
 				}
-				if(Map.get(rcdread.get(i * 3 + 1)) != null){
-					if(rcdMap.get(rcdread.get(i * 3 + 1)) == null){
-						rcdMap.put(rcdread.get(i * 3 + 1) , price[i]);
+				if(name.equals("commodity")){
+					if(map.get(rcdread.get(i * 3 + 1)) != null){
+						if(rcdMap.get(rcdread.get(i * 3 + 1)) == null){
+							rcdMap.put(rcdread.get(i * 3 + 1) , price[i]);
+						}else{
+							rcdMap.put(rcdread.get(i * 3 + 1) , rcdMap.get(rcdread.get(i * 3 + 1)) + price[i]);
+						}
 					}else{
-						rcdMap.put(rcdread.get(i * 3 + 1) , rcdMap.get(rcdread.get(i * 3 + 1)) + price[i]);
+						codeerror(rcdfile.get(i), "商品");
+						System.exit(0);
 					}
-				}else{
-					System.err.println(rcdfile.get(i) + "の商品コードが不正です");
-					System.exit(0);
 				}
 				br.close();
 			}
 		}catch(IOException e){
-			filenum = filenum + 1;
-			notfile(null, filenum);
+			notfile("売上");
+			System.exit(0);
 		}
 		for(String key : rcdMap.keySet()){
 			if(rcdMap.get(key) >= 1000000000){
@@ -109,26 +118,23 @@ public class UriageSyukei {
 		}
 	}
 
-	static void outputfile(String[] args, ArrayList<String> outfile, String[] match,
-			LinkedHashMap<String, String> Map, LinkedHashMap<String, Integer> rcdMap, int filenum){
-		for(int i = 0; i < outfile.size(); i++){
+	static boolean outputfile(String[] args, String files,
+			LinkedHashMap<String, String> map, LinkedHashMap<String, Integer> rcdMap){
 			try{
-				File file = new File(args[0] + File.separator + outfile.get(i));
+				File file = new File(args[0] + File.separator + files);
 				FileWriter fw = new FileWriter(file);
-				Map<Integer, String> Out = new TreeMap<Integer, String>();
+				Map<Integer, String> out = new TreeMap<Integer, String>();
 				int a = 0;
 
-				for(String str : Map.keySet()){
-					if(str.matches(match[i]) == true){
-						if(rcdMap.get(str) != null){
-							Out.put(rcdMap.get(str) , str + ',' + Map.get(str));
-						}else if(rcdMap.get(str) == null){
-							a++;
-							Out.put(a , str + ',' + Map.get(str));
-						}
+				for(String str : map.keySet()){
+					if(rcdMap.get(str) != null){
+						out.put(rcdMap.get(str) , str + ',' + map.get(str));
+					}else if(rcdMap.get(str) == null){
+						a++;
+						out.put(a , str + ',' + map.get(str));
 					}
 				}
-				List<Entry<Integer, String>> entries = new ArrayList<Entry<Integer, String>>(Out.entrySet());
+				List<Entry<Integer, String>> entries = new ArrayList<Entry<Integer, String>>(out.entrySet());
 				Collections.sort(entries, new Comparator<Entry<Integer, String>>() {
 				    public int compare(Entry<Integer, String> o1, Entry<Integer, String> o2) {
 				        return o2.getKey().compareTo(o1.getKey());
@@ -136,62 +142,77 @@ public class UriageSyukei {
 				});
 				for(Entry<Integer,String> entry : entries){
 					if(!(entry.getKey().equals(a))){
-						fw.write(Out.get(entry.getKey()) + "," + entry.getKey() + System.getProperty("line.separator"));
+						fw.write(out.get(entry.getKey()) + "," + entry.getKey() + System.getProperty("line.separator"));
 					}else{
-						fw.write(Out.get(entry.getKey()) + "," + 0 + System.getProperty("line.separator"));
+						fw.write(out.get(entry.getKey()) + "," + 0 + System.getProperty("line.separator"));
 						a--;
 					}
 				}
 				fw.close();
 			} catch (IOException e) {
-				filenum = filenum + 2 + i;
-				notfile(null, filenum);
+				return false;
 			}
-		}
+			return false;
 	}
-	public static void notfile(String[] filename, int filenum){
-		main(filename);
-		System.err.println(filename[filenum] + "ファイルが存在しません");
-		System.exit(0);
+
+	public static void notfile(String filename){
+		System.err.println(filename + "ファイルが存在しません");
 	}
-	public static void formaterror(){
-		
+	public static void formaterror(String format){
+		System.err.println(format + "のフォーマットが不正です");
+	}
+	public static void codeerror(String code, String filename){
+		System.err.println(code + "の" + filename +"コードが不正です");
 	}
 
 	public static void main(String[] args) {
 		if(args.length != 1){
 			System.err.println("正しくディレクトリを指定してください。");
-			System.exit(1);
+			return;
 		}
-		ArrayList<String> listfile = new ArrayList<String>();
-		ArrayList<String> outfile = new ArrayList<String>();
 		ArrayList<String> rcdfile = new ArrayList<String>();
-		File dir = new File(args[0]);
-		File[] files = dir.listFiles();
-		for (int i = 0; i < files.length; i++) {
-			File file = files[i];
-			if(file.getName().matches("^\\D{1,}.lst$")) {
-				listfile.add(file.getName());
-			}else if(file.getName().matches("^\\D{1,}.out$")){
-				outfile.add(file.getName());
-			}
-		}
-		String[] filename = new String[5];
-		filename[0] = "支店定義";
-		filename[1] = "商品定義";
-		filename[2] = "売上";
-		filename[3] = "支店別集計";
-		filename[4] = "商品別集計";
-		int filenum = 0;
-		String regex = "^\\d{3},[^,]\\D{1,}[^,]$|^\\w{8},[^,]\\D{1,}[^,]$";
-		LinkedHashMap<String, String> Map = new LinkedHashMap<String, String>();
+		String regex = "^\\d{3}|^\\w{8}";
+		LinkedHashMap<String, String> branchMap = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, String> commodityMap = new LinkedHashMap<String, String>();
 		LinkedHashMap<String, Integer> rcdMap = new LinkedHashMap<String, Integer>();
-		String[] match = new String[listfile.size()];
-		match[0] = "^\\d{3}";
-		match[1] = "^\\D{3}\\d{5}";
-		inputfile(args, listfile, regex, Map, filenum);
+
+		if(inputfile(args, "branch.lst", regex, branchMap) == null){
+			inputfile(args, "branch.lst", regex, branchMap);
+		}else if(inputfile(args, "branch.lst", regex, commodityMap).equals("not")){
+			notfile("支店定義");
+			return;
+		}else if(inputfile(args, "branch.lst", regex, commodityMap).equals("format")){
+			formaterror("支店定義");
+			return;
+		}
+
+		if(inputfile(args, "commodity.lst", regex, commodityMap) == null){
+			inputfile(args, "commodity.lst", regex, commodityMap);
+		}else if(inputfile(args, "commodity.lst", regex, commodityMap).equals("not")){
+			notfile("商品定義");
+			return;
+		}else if(inputfile(args, "commodity.lst", regex, commodityMap).equals("format")){
+			formaterror("商品定義");
+			return;
+		}
+
 		numberCheck(args, rcdfile);
-		tally(args, Map, rcdMap, rcdfile ,filenum);
-		outputfile(args, outfile, match, Map, rcdMap ,filenum);
+
+		tally(args, branchMap, "branch", rcdMap, rcdfile);
+		tally(args, commodityMap, "commodity", rcdMap, rcdfile);
+
+		if(outputfile(args, "branch.out",  branchMap, rcdMap) == false){
+			outputfile(args, "branch.out",  branchMap, rcdMap);
+		}else{
+			notfile("支店別集計");
+			return;
+		}
+
+		if(outputfile(args, "commodity.out",  branchMap, rcdMap) == false){
+			outputfile(args, "commodity.out", commodityMap, rcdMap);
+		}else{
+			notfile("商品別集計");
+			return;
+		}
 	}
 }
