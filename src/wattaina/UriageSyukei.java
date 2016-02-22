@@ -177,7 +177,7 @@ public class UriageSyukei {
 			}
 			return false;
 	}
-	
+
 	public static void main(String[] args) {
 		if(args.length != 1){
 			System.err.println("正しくディレクトリを指定してください。");
@@ -192,17 +192,29 @@ public class UriageSyukei {
 		LinkedHashMap<String, Integer> rcdMap = new LinkedHashMap<String, Integer>();
 
 
-		loadFile(args, "branch.lst", "支店定義", regex, branchMap, beanchSalesMap);
+		if(loadFile(args, "branch.lst", "支店定義", regex, branchMap, beanchSalesMap) == true){
+			return;
+		}
 
-		loadFile(args, "commodity.lst", "商品定義", regex, commodityMap, commoditySalesMap);
-		
+		if(loadFile(args, "commodity.lst", "商品定義", regex, commodityMap, commoditySalesMap)){
+			return;
+		}
 
-		numberCheck(args, rcdfile);
 
-		aggregateData(args, beanchSalesMap, commoditySalesMap, rcdMap, rcdfile);
+		if(numberCheck(args, rcdfile) == true){
+			return;
+		}
 
-		fileOutput(args, "branch.out",  branchMap, beanchSalesMap);
+		if(aggregateData(args, beanchSalesMap, commoditySalesMap, rcdMap, rcdfile)){
+			return;
+		}
 
-		fileOutput(args, "commodity.out", commodityMap, commoditySalesMap);
+		if(fileOutput(args, "branch.out",  branchMap, beanchSalesMap)){
+			return;
+		}
+
+		if(fileOutput(args, "commodity.out", commodityMap, commoditySalesMap)){
+			return;
+		}
 	}
 }
