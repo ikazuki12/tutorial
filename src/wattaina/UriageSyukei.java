@@ -17,25 +17,35 @@ import java.util.TreeMap;
 
 public class UriageSyukei {
 
-	static String loadFile(String[] args, String files, String regex, LinkedHashMap<String, String> map){
+	static String loadFile(String[] args, String files, String regex, LinkedHashMap<String, String> definitionMap, LinkedHashMap<String, Integer> salesMap){
+		BufferedReader br = null;
 		try{
-			BufferedReader br = new BufferedReader(new FileReader(args[0] + File.separator + files));
+			br = new BufferedReader(new FileReader(args[0] + File.separator + files));
 			String str;
 			while((str = br.readLine()) != null){
 				String[] format = str.split(",");
 				if(format.length != 2){
-						return "format";
-				}
-				if(!(format[0].matches(regex))){
 					return "format";
-				}	
-				map.put(format[0],format[1]);
+				}
+				if(!format[0].matches(regex)){
+					return "format";
+				}
+				definitionMap.put(format[0],format[1]);
+				salesMap.put(format[0], 0);
+
 			}
-			br.close();
 		}catch(FileNotFoundException e){
 			return "not";
 		}catch(IOException e){
 			return "not";
+		}finally{
+			if (br != null){
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 		return null;
 	}
@@ -62,75 +72,74 @@ public class UriageSyukei {
 		}
 	}
 
-	static void aggregateData(String[] args, LinkedHashMap<String, String> map, String name,
-			LinkedHashMap<String, Integer> rcdMap, ArrayList<String> rcdfile){
+	static boolean aggregateData(String[] args, LinkedHashMap<String, Integer> beanchSalesMap, LinkedHashMap<String, Integer> commoditySalesMap,
+			LinkedHashMap<String, Integer>rcdMap, ArrayList<String> rcdfile){
+		BufferedReader br = null;
 		try{
-			ArrayList<String> rcdread = new ArrayList<String>();
 		    for(int i = 0; i < rcdfile.size(); i++){
-				BufferedReader br = new BufferedReader(new FileReader(args[0] + File.separator + rcdfile.get(i)));
+		    	ArrayList<String> rcdRead = new ArrayList<String>();
+				br = new BufferedReader(new FileReader(args[0] + File.separator + rcdfile.get(i)));
 				String str;
+				int price = 0;
 				while((str = br.readLine()) != null){
-					rcdread.add(str);
+					rcdRead.add(str);
 				}
-				if(rcdread.size() % 3 != 0){
-					formaterror(rcdfile.get(i));
-				}
-				int[] price = new int[rcdfile.size()];
-				if(rcdread.get(i * 3 + 2).length() <= 10){
-					price[i] = Integer.parseInt(rcdread.get(i * 3 + 2));
+
+				if(rcdRead.get(2).length() < 10){
+					price = Integer.parseInt(rcdRead.get(2));
 				}else{
 					System.err.println("売上金額が10桁を超えました");
 				}
-				if(name.equals("branch")){
-					if(map.get(rcdread.get(i * 3)) != null){
-						if(rcdMap.get(rcdread.get(i * 3)) == null){
-							rcdMap.put(rcdread.get(i * 3) , price[i]);
-						}else{
-							rcdMap.put(rcdread.get(i * 3) , rcdMap.get(rcdread.get(i * 3)) + price[i]);
-						}
-					}else{
-						codeerror(rcdfile.get(i), "支店");
-						System.exit(0);
-					}
+				if(beanchSalesMap.containsKey(rcdRead.get(0))){
+					beanchSalesMap.put(rcdRead.get(0), beanchSalesMap.get(rcdRead.get(0)) + price);
+//					System.out.println(beanchSalesMap);
+				}else{
+					codeFraud(rcdfile.get(i), "支店");
+					return true;
 				}
-				if(name.equals("commodity")){
-					if(map.get(rcdread.get(i * 3 + 1)) != null){
-						if(rcdMap.get(rcdread.get(i * 3 + 1)) == null){
-							rcdMap.put(rcdread.get(i * 3 + 1) , price[i]);
-						}else{
-							rcdMap.put(rcdread.get(i * 3 + 1) , rcdMap.get(rcdread.get(i * 3 + 1)) + price[i]);
-						}
-					}else{
-						codeerror(rcdfile.get(i), "商品");
-						System.exit(0);
+				if(commoditySalesMap.containsKey(rcdRead.get(1))){
+					commoditySalesMap.put(rcdRead.get(1), commoditySalesMap.get(rcdRead.get(1)) + price);
+				}else{
+					codeFraud(rcdfile.get(i), "商品");
+					return true;
+				}
+				for(String key : rcdMap.keySet()){
+					if(rcdMap.get(key).toString().length() > 10){
+						System.err.println("合計金額が10桁を超えています");
+						return true;
 					}
 				}
 				br.close();
 			}
 		}catch(IOException e){
-			notfile("売上");
-			System.exit(0);
-		}
-		for(String key : rcdMap.keySet()){
-			if(rcdMap.get(key).toString().length() >= 10){
-				System.err.println("合計金額が10桁を超えています");
-				System.exit(0);
+			fileDoseNotExist("売上");
+			return true;
+		}finally{
+			if (br != null){
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
+		return false;
 	}
 
 	static boolean fileOutput(String[] args, String files,
-			LinkedHashMap<String, String> map, LinkedHashMap<String, Integer> rcdMap){
+			LinkedHashMap<String, String> map, LinkedHashMap<String, Integer> salesMap){
+			FileWriter fw = null;
 			try{
 				File file = new File(args[0] + File.separator + files);
-				FileWriter fw = new FileWriter(file);
+				fw = new FileWriter(file);
 				Map<Integer, String> out = new TreeMap<Integer, String>();
 				int a = 0;
 
 				for(String str : map.keySet()){
-					if(rcdMap.get(str) != null){
-						out.put(rcdMap.get(str) , str + ',' + map.get(str));
-					}else if(rcdMap.get(str) == null){
+					System.out.println(salesMap.get(str));
+					if(salesMap.get(str) != 0){
+						out.put(salesMap.get(str) , str + ',' + map.get(str));
+					}else{
 						a++;
 						out.put(a , str + ',' + map.get(str));
 					}
@@ -155,17 +164,25 @@ public class UriageSyukei {
 			}
 			catch (IOException e) {
 				return true;
+			}finally{
+				if (fw != null){
+					try {
+						fw.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 			return false;
 	}
 
-	public static void notfile(String filename){
+	public static void fileDoseNotExist(String filename){
 		System.err.println(filename + "ファイルが存在しません");
 	}
-	public static void formaterror(String format){
+	public static void formatFraud(String format){
 		System.err.println(format + "のフォーマットが不正です");
 	}
-	public static void codeerror(String code, String filename){
+	public static void codeFraud(String code, String filename){
 		System.err.println(code + "の" + filename +"コードが不正です");
 	}
 
@@ -178,45 +195,37 @@ public class UriageSyukei {
 		String regex = "^\\d{3}|^\\w{8}";
 		LinkedHashMap<String, String> branchMap = new LinkedHashMap<String, String>();
 		LinkedHashMap<String, String> commodityMap = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, Integer> beanchSalesMap = new LinkedHashMap<String, Integer>();
+		LinkedHashMap<String, Integer> commoditySalesMap = new LinkedHashMap<String, Integer>();
 		LinkedHashMap<String, Integer> rcdMap = new LinkedHashMap<String, Integer>();
 
-		if(loadFile(args, "branch.lst", regex, branchMap) == null){
-			loadFile(args, "branch.lst", regex, branchMap);
-		}else if(loadFile(args, "branch.lst", regex, commodityMap).equals("not")){
-			notfile("支店定義");
+
+		String type = loadFile(args, "branch.lst", regex, branchMap, beanchSalesMap);
+		if(type.equals("not")){
+			fileDoseNotExist("支店定義");
 			return;
-		}else if(loadFile(args, "branch.lst", regex, commodityMap).equals("format")){
-			formaterror("支店定義");
+		}else if(type.equals("format")){
+			formatFraud("支店定義");
 			return;
 		}
 
-		if(loadFile(args, "commodity.lst", regex, commodityMap) == null){
-			loadFile(args, "commodity.lst", regex, commodityMap);
-		}else if(loadFile(args, "commodity.lst", regex, commodityMap).equals("not")){
-			notfile("商品定義");
+		loadFile(args, "commodity.lst", regex, commodityMap, commoditySalesMap);
+		if(loadFile(args, "commodity.lst", regex, commodityMap, commoditySalesMap).equals("not")){
+			fileDoseNotExist("商品定義");
 			return;
-		}else if(loadFile(args, "commodity.lst", regex, commodityMap).equals("format")){
-			formaterror("商品定義");
+		}else if(loadFile(args, "commodity.lst", regex, commodityMap, commoditySalesMap).equals("format")){
+			formatFraud("商品定義");
 			return;
 		}
 
 		numberCheck(args, rcdfile);
 
-		aggregateData(args, branchMap, "branch", rcdMap, rcdfile);
-		aggregateData(args, commodityMap, "commodity", rcdMap, rcdfile);
+		aggregateData(args, beanchSalesMap, commoditySalesMap, rcdMap, rcdfile);
 
-		if(fileOutput(args, "branch.out",  branchMap, rcdMap) == false){
-			fileOutput(args, "branch.out",  branchMap, rcdMap);
-		}else{
-			notfile("支店別集計");
-			return;
-		}
+//		System.out.println(beanchSalesMap);
 
-		if(fileOutput(args, "commodity.out",  branchMap, rcdMap) == false){
-			fileOutput(args, "commodity.out", commodityMap, rcdMap);
-		}else{
-			notfile("商品別集計");
-			return;
-		}
+		fileOutput(args, "branch.out",  branchMap, beanchSalesMap);
+
+		fileOutput(args, "commodity.out", commodityMap, commoditySalesMap);
 	}
 }
