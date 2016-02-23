@@ -43,7 +43,7 @@ public class UriageSyukei {
 			if (br != null){
 				try {
 					br.close();
-				} catch (IOException e) {
+				}catch (IOException e){
 					e.printStackTrace();
 				}
 			}
@@ -54,10 +54,9 @@ public class UriageSyukei {
 	static boolean numberCheck(String[] args, ArrayList<String> rcdfile){
 		File dir = new File(args[0]);
 		File[] files = dir.listFiles();
-		for (int i = 0; i < files.length; i++) {
-			File file = files[i];
-			if(file.getName().matches("^\\d{8}.rcd$")) {
-				rcdfile.add(file.getName());
+		for(int i = 0; i < files.length; i++){
+			if(files[i].getName().matches("^\\d{8}.rcd$")){
+				rcdfile.add(files[i].getName());
 			}
 		}
 		String[] rcd = new String[rcdfile.size()];
@@ -115,10 +114,10 @@ public class UriageSyukei {
 			System.err.println("売上ファイルが存在しません");
 			return true;
 		}finally{
-			if (br != null){
-				try {
+			if(br != null){
+				try{
 					br.close();
-				} catch (IOException e) {
+				}catch(IOException e){
 					e.printStackTrace();
 				}
 			}
@@ -136,20 +135,20 @@ public class UriageSyukei {
 			int a = 0;
 			for(String str : map.keySet()){
 				if(salesMap.get(str) != 0){
-					out.put(salesMap.get(str) , str + ',' + map.get(str));
+					out.put(salesMap.get(str), str + ',' + map.get(str));
 				}else{
 					a++;
-					out.put(a , str + ',' + map.get(str));
+					out.put(a, str + ',' + map.get(str));
 				}
 			}
 			List<Entry<Integer, String>> entries = new ArrayList<Entry<Integer, String>>(out.entrySet());
-			Collections.sort(entries, new Comparator<Entry<Integer, String>>() {
-				public int compare(Entry<Integer, String> o1, Entry<Integer, String> o2) {
+			Collections.sort(entries, new Comparator<Entry<Integer, String>>(){
+				public int compare(Entry<Integer, String> o1, Entry<Integer, String> o2){
 					return o2.getKey().compareTo(o1.getKey());
 				}
 			});
 			for(Entry<Integer,String> entry : entries){
-				if(!(entry.getKey().equals(a))){
+				if(!entry.getKey().equals(a)){
 					fw.write(out.get(entry.getKey()) + "," + entry.getKey() + System.getProperty("line.separator"));
 				}else{
 					fw.write(out.get(entry.getKey()) + "," + 0 + System.getProperty("line.separator"));
@@ -157,16 +156,16 @@ public class UriageSyukei {
 				}
 			}
 			fw.close();
-		}catch(FileNotFoundException e) {
+		}catch(FileNotFoundException e){
 			return true;
 		}
-		catch (IOException e) {
+		catch(IOException e){
 			return true;
 		}finally{
-			if (fw != null){
-				try {
+			if(fw != null){
+				try{
 					fw.close();
-				} catch (IOException e) {
+				}catch(IOException e){
 					e.printStackTrace();
 				}
 			}
@@ -174,7 +173,7 @@ public class UriageSyukei {
 		return false;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args){
 		if(args.length != 1){
 			System.err.println("正しくディレクトリを指定してください。");
 			return;
@@ -191,7 +190,7 @@ public class UriageSyukei {
 			return;
 		}
 
-		if(loadFile(args, "commodity.lst", "商品定義", regex, commodityMap, commoditySalesMap)){
+		if(loadFile(args, "commodity.lst", "商品定義", regex, commodityMap, commoditySalesMap) == true){
 			return;
 		}
 
@@ -199,15 +198,15 @@ public class UriageSyukei {
 			return;
 		}
 
-		if(aggregateData(args, beanchSalesMap, commoditySalesMap, rcdMap, rcdfile)){
+		if(aggregateData(args, beanchSalesMap, commoditySalesMap, rcdMap, rcdfile) == true){
 			return;
 		}
 
-		if(fileOutput(args, "branch.out",  branchMap, beanchSalesMap)){
+		if(fileOutput(args, "branch.out",  branchMap, beanchSalesMap) == true){
 			return;
 		}
 
-		if(fileOutput(args, "commodity.out", commodityMap, commoditySalesMap)){
+		if(fileOutput(args, "commodity.out", commodityMap, commoditySalesMap) == true){
 			return;
 		}
 	}
