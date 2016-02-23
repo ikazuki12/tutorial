@@ -33,7 +33,6 @@ public class UriageSyukei {
 				}
 				definitionMap.put(format[0],format[1]);
 				salesMap.put(format[0], 0);
-
 			}
 		}catch(FileNotFoundException e){
 			System.err.println(name + "ファイルが存在しません");
@@ -87,7 +86,6 @@ public class UriageSyukei {
 				while((str = br.readLine()) != null){
 					rcdRead.add(str);
 				}
-
 				if(rcdRead.get(2).length() < 10){
 					price = Integer.parseInt(rcdRead.get(2));
 				}else{
@@ -95,7 +93,6 @@ public class UriageSyukei {
 				}
 				if(beanchSalesMap.containsKey(rcdRead.get(0))){
 					beanchSalesMap.put(rcdRead.get(0), beanchSalesMap.get(rcdRead.get(0)) + price);
-//					System.out.println(beanchSalesMap);
 				}else{
 					System.err.println(rcdfile.get(i) + "の支店コードが不正です");
 					return true;
@@ -130,52 +127,51 @@ public class UriageSyukei {
 	}
 
 	static boolean fileOutput(String[] args, String files,
-			LinkedHashMap<String, String> map, LinkedHashMap<String, Integer> salesMap){
-			FileWriter fw = null;
-			try{
-				File file = new File(args[0] + File.separator + files);
-				fw = new FileWriter(file);
-				Map<Integer, String> out = new TreeMap<Integer, String>();
-				int a = 0;
-
-				for(String str : map.keySet()){
-					if(salesMap.get(str) != 0){
-						out.put(salesMap.get(str) , str + ',' + map.get(str));
-					}else{
-						a++;
-						out.put(a , str + ',' + map.get(str));
-					}
-				}
-				List<Entry<Integer, String>> entries = new ArrayList<Entry<Integer, String>>(out.entrySet());
-				Collections.sort(entries, new Comparator<Entry<Integer, String>>() {
-				    public int compare(Entry<Integer, String> o1, Entry<Integer, String> o2) {
-				        return o2.getKey().compareTo(o1.getKey());
-				    }
-				});
-				for(Entry<Integer,String> entry : entries){
-					if(!(entry.getKey().equals(a))){
-						fw.write(out.get(entry.getKey()) + "," + entry.getKey() + System.getProperty("line.separator"));
-					}else{
-						fw.write(out.get(entry.getKey()) + "," + 0 + System.getProperty("line.separator"));
-						a--;
-					}
-				}
-				fw.close();
-			}catch(FileNotFoundException e) {
-				return true;
-			}
-			catch (IOException e) {
-				return true;
-			}finally{
-				if (fw != null){
-					try {
-						fw.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+		LinkedHashMap<String, String> map, LinkedHashMap<String, Integer> salesMap){
+		FileWriter fw = null;
+		try{
+			File file = new File(args[0] + File.separator + files);
+			fw = new FileWriter(file);
+			Map<Integer, String> out = new TreeMap<Integer, String>();
+			int a = 0;
+			for(String str : map.keySet()){
+				if(salesMap.get(str) != 0){
+					out.put(salesMap.get(str) , str + ',' + map.get(str));
+				}else{
+					a++;
+					out.put(a , str + ',' + map.get(str));
 				}
 			}
-			return false;
+			List<Entry<Integer, String>> entries = new ArrayList<Entry<Integer, String>>(out.entrySet());
+			Collections.sort(entries, new Comparator<Entry<Integer, String>>() {
+				public int compare(Entry<Integer, String> o1, Entry<Integer, String> o2) {
+					return o2.getKey().compareTo(o1.getKey());
+				}
+			});
+			for(Entry<Integer,String> entry : entries){
+				if(!(entry.getKey().equals(a))){
+					fw.write(out.get(entry.getKey()) + "," + entry.getKey() + System.getProperty("line.separator"));
+				}else{
+					fw.write(out.get(entry.getKey()) + "," + 0 + System.getProperty("line.separator"));
+					a--;
+				}
+			}
+			fw.close();
+		}catch(FileNotFoundException e) {
+			return true;
+		}
+		catch (IOException e) {
+			return true;
+		}finally{
+			if (fw != null){
+				try {
+					fw.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return false;
 	}
 
 	public static void main(String[] args) {
@@ -191,7 +187,6 @@ public class UriageSyukei {
 		LinkedHashMap<String, Integer> commoditySalesMap = new LinkedHashMap<String, Integer>();
 		LinkedHashMap<String, Integer> rcdMap = new LinkedHashMap<String, Integer>();
 
-
 		if(loadFile(args, "branch.lst", "支店定義", regex, branchMap, beanchSalesMap) == true){
 			return;
 		}
@@ -199,7 +194,6 @@ public class UriageSyukei {
 		if(loadFile(args, "commodity.lst", "商品定義", regex, commodityMap, commoditySalesMap)){
 			return;
 		}
-
 
 		if(numberCheck(args, rcdfile) == true){
 			return;
