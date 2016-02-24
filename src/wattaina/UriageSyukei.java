@@ -13,7 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 
 public class UriageSyukei {
 
@@ -134,30 +133,20 @@ public class UriageSyukei {
 		try{
 			File file = new File(args[0] + File.separator + files);
 			fw = new FileWriter(file);
-			Map<Long, String> out = new TreeMap<Long, String>();
-			long a = 0;
-			for(String str : map.keySet()){
-				if(salesMap.get(str) != 0){
-					out.put(salesMap.get(str), str + ',' + map.get(str));
-				}else{
-					a++;
-					out.put(a,  str + ',' + map.get(str) + "," + salesMap.get(str));
-				}
-			}
-			List<Entry<Long, String>> entries = new ArrayList<Entry<Long, String>>(out.entrySet());
-			Collections.sort(entries, new Comparator<Entry<Long, String>>(){
-				@Override
-				public int compare(Entry<Long, String> o1, Entry<Long, String> o2){
-					return o2.getKey().compareTo(o1.getKey());
-				}
-			});
-			for(Entry<Long, String> entry : entries){
-				if(!entry.getKey().equals(a)){
-					fw.write(out.get(entry.getKey()) + "," + entry.getKey() + System.getProperty("line.separator"));
-				}else{
-					fw.write(out.get(entry.getKey()) + System.getProperty("line.separator"));
-					a--;
-				}
+			List<Map.Entry<String,Long>> entries =
+		              new ArrayList<Map.Entry<String,Long>>(salesMap.entrySet());
+		        Collections.sort(entries, new Comparator<Map.Entry<String,Long>>() {
+
+		            @Override
+		            public int compare(
+		                  Entry<String,Long> entry1, Entry<String,Long> entry2) {
+		                return ((Long)entry2.getValue()).compareTo((Long)entry1.getValue());
+		            }
+		        });
+			for(Entry<String, Long> entry : entries){
+				fw.write(entry.getKey() + "," + map.get(entry.getKey()) + "," +
+						entry.getValue() + System.getProperty("line.separator"));
+
 			}
 			fw.close();
 		}
@@ -175,7 +164,7 @@ public class UriageSyukei {
 			System.err.println(filename + "ファイルが存在しません");
 		}
 		if(errorCode.equals("formatMore") || errorCode.equals("illegalFormat")
-				|| errorCode.equals("linefeedExists")){
+				|| errorCode.equals("linefeedExists") || errorCode.equals("notMatch")){
 			System.err.println(filename + "のフォーマットが不正です");
 		}
 		if(errorCode.equals("overflow")){
@@ -204,7 +193,7 @@ public class UriageSyukei {
 		String errorCharacter = null;
 		boolean hasError = false;
 		try{
-			errorCharacter = loadFile(args, "branch.lst", "^\\d{3}$", branchMap, branchSalesMap);
+			errorCharacter = loadFile(args, "branch.lst", "^\\d{3}", branchMap, branchSalesMap);
 			if(more.equals(errorCharacter)){
 				errorHandingDisplay("支店定義", errorCharacter);
 				return;
