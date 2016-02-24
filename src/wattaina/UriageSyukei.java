@@ -18,6 +18,7 @@ import java.util.TreeMap;
 public class UriageSyukei {
 
 	static String more = "formatMore";
+	static String exists = "linefeedExists";
 	static String match = "notMatch";
 	static String illegal = "illegalFormat";
 	static String over = "overflow";
@@ -28,9 +29,13 @@ public class UriageSyukei {
 			LinkedHashMap<String, Long> salesMap) throws IOException, FileNotFoundException {
 		BufferedReader br = null;
 		try{
-			br = new BufferedReader(new FileReader(args[0] + File.separator + files));
+			FileReader file = new FileReader(args[0] + File.separator + files);
+			br = new BufferedReader(file);
 			String str;
 			while((str = br.readLine()) != null){
+				if(str.equals("")){
+					return "linefeedExists";
+				}
 				String[] format = str.split(",");
 				if(format.length != 2){
 					return "formatMore";
@@ -85,7 +90,7 @@ public class UriageSyukei {
 				while((str = br.readLine()) != null){
 					rcdRead.add(str);
 				}
-				if(rcdRead.isEmpty() || rcdRead.size() / 3 != 1){
+				if(rcdRead.isEmpty() || (double) rcdRead.size() / 3 != 1){
 					errorHandingDisplay(rcdfile.get(i), "illegalFormat");
 					return "illegalFormat";
 				}
@@ -169,7 +174,8 @@ public class UriageSyukei {
 		if(errorCode.equals("noFile")){
 			System.err.println(filename + "ファイルが存在しません");
 		}
-		if(errorCode.equals("illegalFormat")){
+		if(errorCode.equals("formatMore") || errorCode.equals("illegalFormat")
+				|| errorCode.equals("linefeedExists")){
 			System.err.println(filename + "のフォーマットが不正です");
 		}
 		if(errorCode.equals("overflow")){
@@ -202,6 +208,9 @@ public class UriageSyukei {
 			if(more.equals(errorCharacter)){
 				errorHandingDisplay("支店定義", errorCharacter);
 				return;
+			}else if(exists.equals(errorCharacter)){
+				errorHandingDisplay("支店定義", errorCharacter);
+				return;
 			}else if(match.equals(errorCharacter)){
 				errorHandingDisplay("支店定義", errorCharacter);
 				return;
@@ -215,6 +224,9 @@ public class UriageSyukei {
 		try{
 			errorCharacter = loadFile(args, "commodity.lst", "^\\w{8}$", commodityMap, commoditySalesMap);
 			if(more.equals(errorCharacter)){
+				errorHandingDisplay("商品定義", errorCharacter);
+				return;
+			}else if(exists.equals(errorCharacter)){
 				errorHandingDisplay("商品定義", errorCharacter);
 				return;
 			}else if(match.equals(errorCharacter)){
