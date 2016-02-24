@@ -115,6 +115,7 @@ public class UriageSyukei {
 				}
 				for(String key : commoditySalesMap.keySet()){
 					if(commoditySalesMap.get(key).toString().length() > 10){
+						errorHandingDisplay("合計", over);
 						return over;
 					}
 				}
@@ -193,17 +194,11 @@ public class UriageSyukei {
 		LinkedHashMap<String, Long> commoditySalesMap = new LinkedHashMap<String, Long>();
 		LinkedHashMap<String, Integer> rcdMap = new LinkedHashMap<String, Integer>();
 
-		String errorCharacter = null;
+		String errorCharacter = "";
 		boolean hasError = false;
 		try{
 			errorCharacter = loadFile(args, "branch.lst", "^\\d{3}", branchMap, branchSalesMap);
-			if(more.equals(errorCharacter)){
-				errorHandingDisplay("支店定義", errorCharacter);
-				return;
-			}else if(exists.equals(errorCharacter)){
-				errorHandingDisplay("支店定義", errorCharacter);
-				return;
-			}else if(match.equals(errorCharacter)){
+			if(!errorCharacter.equals("")){
 				errorHandingDisplay("支店定義", errorCharacter);
 				return;
 			}
@@ -215,13 +210,7 @@ public class UriageSyukei {
 		}
 		try{
 			errorCharacter = loadFile(args, "commodity.lst", "^\\w{8}$", commodityMap, commoditySalesMap);
-			if(more.equals(errorCharacter)){
-				errorHandingDisplay("商品定義", errorCharacter);
-				return;
-			}else if(exists.equals(errorCharacter)){
-				errorHandingDisplay("商品定義", errorCharacter);
-				return;
-			}else if(match.equals(errorCharacter)){
+			if(!errorCharacter.equals("")){
 				errorHandingDisplay("商品定義", errorCharacter);
 				return;
 			}
@@ -238,12 +227,7 @@ public class UriageSyukei {
 
 		try{
 			errorCharacter = aggregateData(args, branchSalesMap, commoditySalesMap, rcdMap, rcdfile);
-			if(illegal.equals(errorCharacter)){
-				return;
-			}else if(over.equals(errorCharacter)){
-				errorHandingDisplay("合計", over);
-				return;
-			}else if(fraud.equals(errorCharacter)){
+			if(!errorCharacter.equals("")){
 				return;
 			}
 		}catch(IOException e){
