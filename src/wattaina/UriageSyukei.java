@@ -119,7 +119,6 @@ public class UriageSyukei {
 						return over;
 					}
 				}
-				br.close();
 			}
 		}catch(IOException e){
 			throw e;
@@ -137,22 +136,17 @@ public class UriageSyukei {
 		try{
 			File file = new File(args[0] + File.separator + files);
 			fw = new FileWriter(file);
-			List<Map.Entry<String,Long>> entries =
-		              new ArrayList<Map.Entry<String,Long>>(salesMap.entrySet());
-		        Collections.sort(entries, new Comparator<Map.Entry<String,Long>>() {
-
-		            @Override
-		            public int compare(
-		                  Entry<String,Long> entry1, Entry<String,Long> entry2) {
-		                return ((Long)entry2.getValue()).compareTo((Long)entry1.getValue());
-		            }
-		        });
+			List<Map.Entry<String,Long>> entries = new ArrayList<Map.Entry<String,Long>>(salesMap.entrySet());
+				Collections.sort(entries, new Comparator<Map.Entry<String,Long>>() {
+					@Override
+					public int compare(Entry<String,Long> entry1, Entry<String,Long> entry2) {
+							return ((Long)entry2.getValue()).compareTo((Long)entry1.getValue());
+						}
+					});
 			for(Entry<String, Long> entry : entries){
 				fw.write(entry.getKey() + "," + map.get(entry.getKey()) + "," +
 						entry.getValue() + System.getProperty("line.separator"));
-
 			}
-			fw.close();
 		}
 		catch(IOException e){
 			throw e;
