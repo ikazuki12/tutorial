@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.bbs.mapper.CommentMapper"> 
+	<resultMap id="CommentResult" type="jp.co.bbs.entity.Comment">
+		<result column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="message_id" property="messageId" />
+		<result column="text" property="text" />
+		<result column="insert_date" property="insertDate" />
+	</resultMap>
+	<insert id="commentInsert" parameterType="jp.co.bbs.dto.CommentDto">
+		insert into comments (
+			user_id,
+			message_id,
+			text,
+			insert_date
+		) values (
+			#{userId},
+			#{messageId},
+			#{text},
+			#{insertDate}
+		)
+	</insert>
+	<select id="getComments" resultMap="CommentResult">
+		select * from comments
+	</select>
+	<delete id="deleteComment" parameterType="int">
+		delete from comments where id = #{id}
+	</delete>
+	<delete id="deleteMessageComment" parameterType="int">
+		delete from comments where message_id = #{id}
+	</delete>
+</mapper>

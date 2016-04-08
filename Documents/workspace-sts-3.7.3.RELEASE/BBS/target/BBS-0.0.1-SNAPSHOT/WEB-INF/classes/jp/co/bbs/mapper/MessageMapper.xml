@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.bbs.mapper.MessageMapper">
+	<resultMap id="MessageResult" type="jp.co.bbs.entity.Message">
+		<result column="id" property="id" />
+		<result column="user_id" property="userId" />
+		<result column="subject" property="subject" />
+		<result column="text" property="text" />
+		<result column="category" property="category" />
+		<result column="insert_date" property="insertDate" />
+	</resultMap>
+	<select id="getMessage" resultMap="MessageResult">
+    	select *
+    	from messages;	
+	</select>
+	<insert id="messageInsert" parameterType="jp.co.bbs.dto.MessageDto">
+		insert into messages (
+			user_id,
+			subject,
+			text,
+			category,
+			insert_date
+		) values (
+			#{userId},
+			#{subject},
+			#{text},
+			#{category},
+			#{insertDate}
+		)
+		
+	</insert>
+</mapper>

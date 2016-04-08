@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.co.bbs.mapper.UserMapper">
+	<resultMap id="UserResult" type="jp.co.bbs.dto.UserDto">
+		<result column="id" property="id" />
+		<result column="login_id" property="loginId" />
+		<result column="password" property="password" />
+		<result column="name" property="name" />
+		<result column="branch_id" property="branchId" />
+		<result column="position_id" property="positionId" />
+	</resultMap>
+	
+	<insert id="insertUser" parameterType="jp.co.bbs.dto.UserDto">
+    	insert into users (
+    		login_id, 
+    		password, 
+    		name, 
+    		branch_id, 
+    		position_id, 
+    		stopped
+    	) values (
+    		#{loginId}, 
+    		#{password}, 
+    		#{name}, 
+    		#{branchId}, 
+    		#{positionId}, 
+    		1
+    	)
+	</insert>
+	<select id="getUser" resultMap="UserResult" parameterType="jp.co.bbs.dto.UserDto">
+    	select *
+    	from users
+    	where login_id = #{loginId}  and  password = #{password}	
+	</select>
+	
+	<select id="getUsers" resultMap="UserResult" parameterType="jp.co.bbs.dto.UserDto">
+    	select *
+    	from users	
+	</select>
+	<update id="stoppedUser" parameterType="int">
+		update users set stopped = false where id = #{id}
+	</update>
+	<update id="stopUser" parameterType="int">
+		update users set stopped = true where id = #{id}
+	</update>
+	<select id="getSelectUser" resultMap="UserResult" parameterType="int">
+		select * from users where id = #{id}
+	</select>
+	<update id="updeteUser" parameterType="jp.co.bbs.dto.UserDto">
+		update users set 
+		login_id = #{loginId}
+		, password = #{password}
+		, name = #{name}
+		, branch_id = #{branchId}
+		, position_id = #{positionId}
+		where
+		id = #{id}
+	</update>
+	<update id="updeteUserNullPassword" parameterType="jp.co.bbs.dto.UserDto">
+		update users set 
+		login_id = #{loginId}
+		, name = #{name}
+		, branch_id = #{branchId}
+		, position_id = #{positionId}
+		where
+		id = #{id}
+	</update>
+	<select id="getExsitUser" resultMap="UserResult" parameterType="jp.co.bbs.dto.UserDto">
+		select * from users where
+		login_id = #{loginId} 
+	</select>
+</mapper>
