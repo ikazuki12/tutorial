@@ -42,7 +42,7 @@ public class MessageController {
 						loginUser.getId(), form.getSubject(), form.getText(), form.getCategory(), date);
 		if (isValid(message, messages)) {
 			messageService.messageInsert(message);
-			return "redirect:/home/";
+			return "redirect:/";
 		} else {
 			session.setAttribute("errorMessages", messages);
 			return "redirect:/message/";
